@@ -38,15 +38,18 @@ public class ReviewControllerTest {
     @Test
     public void testAddReview() throws Exception {
         Review review = new Review("test review", "test author", "test source", 4, "test title", "test product", Instant.now());
-        when(reviewService.save(review)).thenReturn(review); // Mock service call
+        when(reviewService.save(review)).thenReturn(review);
 
         mockMvc.perform(MockMvcRequestBuilders.post("/reviews")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(review)))
+                .andDo(result -> System.out.println("result.getResponse().getContentAsString()-------->::"+result.getResponse().getContentAsString()+"==<-------"))
                 .andExpect(MockMvcResultMatchers.status().isCreated())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.review").value("test review"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.author").value("test author"));
     }
+
+
 
     @Test
     public void testGetReviews_noFilters() throws Exception {

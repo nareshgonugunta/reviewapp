@@ -14,17 +14,14 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/reviews")
 public class ReviewController {
-
     private final ReviewService reviewService;
-
     public ReviewController(ReviewService reviewService) {
         this.reviewService = reviewService;
     }
-
     @PostMapping
     public ResponseEntity<Review> addReview(@RequestBody Review review) {
         Review savedEntity = reviewService.save(review);
-        return new ResponseEntity<>(savedEntity, HttpStatus.CREATED);
+        return new ResponseEntity<Review>(savedEntity, HttpStatus.CREATED);
     }
 
     @GetMapping

@@ -1,14 +1,14 @@
 package com.signify.entity;
 
-//import javax.persistence.*;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 
+import java.io.Serializable;
 import java.time.Instant;
 
 @Entity
-public class Review {
+public class Review implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
