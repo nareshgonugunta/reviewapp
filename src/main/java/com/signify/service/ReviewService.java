@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class ReviewService {
@@ -68,4 +69,10 @@ public class ReviewService {
         return averages;
     }
 
+    public Map<Integer, Long> getRatingCount() {
+        List<Review> reviews = reviewRepository.findAll();
+        return reviews.stream()
+                .collect(Collectors.groupingBy(
+                        Review::getRating, Collectors.counting()));
+    }
 }

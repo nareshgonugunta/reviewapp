@@ -10,10 +10,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.YearMonth;
-import java.time.ZoneId;
+import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -94,7 +92,7 @@ public class ReviewServiceTest {
 
     @Test
     public void testGetReviews_noReviewsFound() {
-        when(reviewRepositoryImpl.findReviewsWithFilters(any(), any(), any())).thenReturn(new ArrayList<>()); // Empty list
+        when(reviewRepositoryImpl.findReviewsWithFilters(any(), any(), any())).thenReturn(new ArrayList<>());
 
         List<Review> result = reviewService.findAllReviews(LocalDate.now(), "test", 5);
 
@@ -119,10 +117,8 @@ public class ReviewServiceTest {
         reviews.add(new Review("review1", "author1", "source1", 4, "title1", "product1", now));
         when(reviewRepository.findAll()).thenReturn(reviews);
 
+        String monthYear = getMonthYear();
         Map<String, Map<String, Double>> averages = reviewService.averageMonthlyRatings();
-
-        YearMonth yearMonth = YearMonth.from(now);
-        String monthYear = yearMonth.toString();
 
         assertEquals(1, averages.size());
         assertTrue(averages.containsKey(monthYear));
@@ -131,11 +127,15 @@ public class ReviewServiceTest {
         assertEquals(4.0, averages.get(monthYear).get("source1"));
     }
 
+
+
     @Test
     public void testAverageMonthlyRatings_multipleReviews() {
         List<Review> reviews = new ArrayList<>();
         Instant now = Instant.now();
+        LocalDate localDate = now.atZone(ZoneId.of("UTC")).toLocalDate();
         Instant past = Instant.now().minusSeconds(60 * 60 * 24 * 30);
+        LocalDate localPastDate = past.atZone(ZoneId.of("UTC")).toLocalDate();
 
         reviews.add(new Review("review1", "author1", "source1", 4, "title1", "product1", now));
         reviews.add(new Review("review2", "author2", "source2", 5, "title2", "product2", now));
@@ -145,9 +145,9 @@ public class ReviewServiceTest {
 
         Map<String, Map<String, Double>> averages = reviewService.averageMonthlyRatings();
 
-        YearMonth currentMonth = YearMonth.from(now);
+        YearMonth currentMonth = YearMonth.from(localDate);
         String currentMonthYear = currentMonth.toString();
-        YearMonth pastMonth = YearMonth.from(past);
+        YearMonth pastMonth = YearMonth.from(localPastDate);
         String pastMonthYear = pastMonth.toString();
 
         assertEquals(2, averages.size());
@@ -157,7 +157,7 @@ public class ReviewServiceTest {
         assertEquals(2, averages.get(currentMonthYear).size());
         assertTrue(averages.get(currentMonthYear).containsKey("source1"));
         assertTrue(averages.get(currentMonthYear).containsKey("source2"));
-        assertEquals(3.5, averages.get(currentMonthYear).get("source1"));
+        assertEquals(4.0, averages.get(currentMonthYear).get("source1"));
         assertEquals(5.0, averages.get(currentMonthYear).get("source2"));
 
         assertEquals(1, averages.get(pastMonthYear).size());
@@ -168,25 +168,18 @@ public class ReviewServiceTest {
     @Test
     public void testAverageMonthlyRatings_noReviewsForMonth() {
         List<Review> reviews = new ArrayList<>();
-        Instant now = Instant.now();
-        reviews.add(new Review("review1", "author1", "source1", 4, "title1", "product1", now));
+        Instant instant = Instant.now();
+        LocalDate localDate = instant.atZone(ZoneId.of("UTC")).toLocalDate();
+        reviews.add(new Review("review1", "author1", "source1", 4, "title1", "product1", instant));
 
         when(reviewRepository.findAll()).thenReturn(reviews);
 
         Map<String, Map<String, Double>> averages = reviewService.averageMonthlyRatings();
 
-        YearMonth nextMonth = YearMonth.from(now).plusMonths(1);
+        YearMonth nextMonth = YearMonth.from(localDate).plusMonths(1);
         String nextMonthYear = nextMonth.toString();
 
         assertFalse(averages.containsKey(nextMonthYear));
-    }
-
-    @Test
-    public void mainTest() {
-        Instant instant = Instant.now();
-        LocalDate localDate = instant.atZone(ZoneId.of("UTC")).toLocalDate();
-        YearMonth yearMonth = YearMonth.from(localDate);
-        System.out.println(yearMonth);
     }
 
     @Test
@@ -224,5 +217,12 @@ public class ReviewServiceTest {
         assertEquals("review1", foundReviews.get(0).getReview());
         assertEquals("review2", foundReviews.get(1).getReview());
         verify(reviewRepository, times(1)).findAll();
+    }
+
+    private static String getMonthYear() {
+        Instant instant = Instant.now();
+        ZonedDateTime zonedDateTime = instant.atZone(ZoneId.of("UTC"));
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM");
+        return zonedDateTime.format(formatter);
     }
 }

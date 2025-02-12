@@ -29,7 +29,6 @@ public class ReviewRepositoryImpl {
 
         List<Predicate> predicates = new ArrayList<>();
         if (date != null) {
-            //predicates.add(cb.equal(root.get("date"), date));
             Instant startOfDay = date.atStartOfDay(ZoneId.of("UTC")).toInstant();
             Instant endOfDay = date.plusDays(1).atStartOfDay(ZoneId.of("UTC")).toInstant();
 
