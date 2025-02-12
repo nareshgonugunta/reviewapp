@@ -2,7 +2,6 @@ package com.signify;
 
 import com.signify.entity.Review;
 import com.signify.repository.ReviewRepository;
-import com.signify.repository.ReviewRepositoryImpl;
 import com.signify.service.ReviewService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,9 +26,6 @@ public class ReviewServiceTest {
     private ReviewService reviewService;
 
     @Mock
-    private ReviewRepositoryImpl reviewRepositoryImpl;
-
-    @Mock
     private ReviewRepository reviewRepository;
 
     @Test
@@ -38,7 +34,7 @@ public class ReviewServiceTest {
         reviews.add(new Review("review1", "author1", "source1", 4, "title1", "product1", Instant.now()));
         reviews.add(new Review("review2", "author2", "source2", 5, "title2", "product2", Instant.now()));
 
-        when(reviewRepositoryImpl.findReviewsWithFilters(null, null, null)).thenReturn(reviews);
+        when(reviewRepository.findReviewsWithFilters(null, null, null)).thenReturn(reviews);
 
         List<Review> result = reviewService.findAllReviews(null, null, null);
 
@@ -53,7 +49,7 @@ public class ReviewServiceTest {
         List<Review> reviews = new ArrayList<>();
         reviews.add(new Review("review1", "author1", "source1", 4, "title1", "product1", Instant.now()));
 
-        when(reviewRepositoryImpl.findReviewsWithFilters(date, null, null)).thenReturn(reviews);
+        when(reviewRepository.findReviewsWithFilters(date, null, null)).thenReturn(reviews);
 
         List<Review> result = reviewService.findAllReviews(date, null, null);
 
@@ -68,7 +64,7 @@ public class ReviewServiceTest {
         List<Review> reviews = new ArrayList<>();
         reviews.add(new Review("review1", "author1", "source1", 4, "title1", "product1", Instant.now()));
 
-        when(reviewRepositoryImpl.findReviewsWithFilters(null, store, null)).thenReturn(reviews);
+        when(reviewRepository.findReviewsWithFilters(null, store, null)).thenReturn(reviews);
 
         List<Review> result = reviewService.findAllReviews(null, store, null);
 
@@ -82,7 +78,7 @@ public class ReviewServiceTest {
         List<Review> reviews = new ArrayList<>();
         reviews.add(new Review("review1", "author1", "source1", 4, "title1", "product1", Instant.now()));
 
-        when(reviewRepositoryImpl.findReviewsWithFilters(null, null, rating)).thenReturn(reviews);
+        when(reviewRepository.findReviewsWithFilters(null, null, rating)).thenReturn(reviews);
 
         List<Review> result = reviewService.findAllReviews(null, null, rating);
 
@@ -92,7 +88,7 @@ public class ReviewServiceTest {
 
     @Test
     public void testGetReviews_noReviewsFound() {
-        when(reviewRepositoryImpl.findReviewsWithFilters(any(), any(), any())).thenReturn(new ArrayList<>());
+        when(reviewRepository.findReviewsWithFilters(any(), any(), any())).thenReturn(new ArrayList<>());
 
         List<Review> result = reviewService.findAllReviews(LocalDate.now(), "test", 5);
 

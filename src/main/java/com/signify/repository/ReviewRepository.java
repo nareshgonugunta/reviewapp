@@ -1,11 +1,64 @@
 package com.signify.repository;
 
 import com.signify.entity.Review;
-import org.springframework.data.jpa.repository.JpaRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Repository;
 
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.List;
+
 @Repository
-public interface ReviewRepository extends JpaRepository<Review, Long> {
+public class ReviewRepository {
+
+    @PersistenceContext
+    EntityManager entityManager;
+
+    public List<Review> findAll() {
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Review> cq = cb.createQuery(Review.class);
+        Root<Review> root = cq.from(Review.class);
+        cq.select(root);
+        return entityManager.createQuery(cq).getResultList();
+    }
 
 
+    public List<Review> findReviewsWithFilters(LocalDate date, String store, Integer rating) {
+
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Review> cq = cb.createQuery(Review.class);
+        Root<Review> root = cq.from(Review.class);
+
+        List<Predicate> predicates = new ArrayList<>();
+        if (date != null) {
+            Instant startOfDay = date.atStartOfDay(ZoneId.of("UTC")).toInstant();
+            Instant endOfDay = date.plusDays(1).atStartOfDay(ZoneId.of("UTC")).toInstant();
+
+            predicates.add(cb.between(root.get("reviewedDate"), startOfDay, endOfDay));
+        }
+        if (store != null && !store.isEmpty()) {
+            predicates.add(cb.equal(root.get("reviewSource"), store));
+        }
+        if (rating != null) {
+            predicates.add(cb.equal(root.get("rating"), rating));
+        }
+        if (!predicates.isEmpty()) {
+            cq.where(predicates.toArray(new Predicate[0]));
+        }
+        return entityManager.createQuery(cq).getResultList();
+    }
+
+    @Transactional
+    public Review save(Review review) {
+        entityManager.persist(review);
+        return review;
+    }
 }

@@ -1,7 +1,7 @@
 package com.signify;
 
 import com.signify.entity.Review;
-import com.signify.repository.ReviewRepositoryImpl;
+import com.signify.repository.ReviewRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -24,7 +24,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class ReviewRepositoryImplTest {
+public class ReviewRepositoryTest {
 
     @Mock
     private EntityManager entityManager;
@@ -42,7 +42,26 @@ public class ReviewRepositoryImplTest {
     private TypedQuery<Review> typedQuery;
 
     @InjectMocks
-    private ReviewRepositoryImpl reviewRepository;
+    private ReviewRepository reviewRepository;
+
+    @Test
+    public void testFindAll() {
+        List<Review> expectedReviews = new ArrayList<>();
+        expectedReviews.add(new Review("review1", "author1", "source1", 4, "title1", "product1", null)); // Add some dummy reviews
+        expectedReviews.add(new Review("review2", "author2", "source2", 5, "title2", "product2", null));
+
+        when(entityManager.getCriteriaBuilder()).thenReturn(criteriaBuilder);
+        when(criteriaBuilder.createQuery(Review.class)).thenReturn(criteriaQuery);
+        when(criteriaQuery.from(Review.class)).thenReturn(root);
+        when(entityManager.createQuery(criteriaQuery)).thenReturn(typedQuery); // Mock the TypedQuery
+        when(entityManager.createQuery(criteriaQuery).getResultList()).thenReturn(expectedReviews); // Return the expected reviews
+
+        List<Review> actualReviews = reviewRepository.findAll();
+
+        assertEquals(expectedReviews.size(), actualReviews.size());
+        assertEquals(expectedReviews.get(0).getReview(), actualReviews.get(0).getReview()); // Check some properties
+        assertEquals(expectedReviews.get(1).getReview(), actualReviews.get(1).getReview());
+    }
 
     @Test
     public void testFindReviewsWithFilters_noFilters() {
@@ -119,6 +138,19 @@ public class ReviewRepositoryImplTest {
         verify(criteriaQuery, times(1)).where(any(Predicate[].class));
     }
 
+    @Test
+    public void testSave() {
+        Review review = new Review("test review", "test author", "test source", 4, "test title", "test product", Instant.now());
+
+        doNothing().when(entityManager).persist(review);
+        Review savedReview = reviewRepository.save(review);
+
+        assertNotNull(savedReview);
+        assertEquals(review.getReview(), savedReview.getReview());
+        verify(entityManager, times(1)).persist(review);
+    }
+
+
     //Load Review Records for mocking
     private List<Review> loadReviews() {
         List<Review> reviewList = new ArrayList<>();
@@ -128,4 +160,5 @@ public class ReviewRepositoryImplTest {
         reviewList.add(new Review("review4", "author4", "google", 3, "title4", "Alexa", Instant.now()));
         return reviewList;
     }
+
 }

@@ -2,7 +2,6 @@ package com.signify.service;
 
 import com.signify.entity.Review;
 import com.signify.repository.ReviewRepository;
-import com.signify.repository.ReviewRepositoryImpl;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -18,11 +17,9 @@ import java.util.stream.Collectors;
 public class ReviewService {
 
     private final ReviewRepository reviewRepository;
-    private final ReviewRepositoryImpl reviewRepositoryImpl;
 
-    public ReviewService(ReviewRepository reviewRepository, ReviewRepositoryImpl reviewRepositoryImpl) {
+    public ReviewService(ReviewRepository reviewRepository) {
         this.reviewRepository = reviewRepository;
-        this.reviewRepositoryImpl = reviewRepositoryImpl;
     }
 
     public Review save(Review review) {
@@ -34,7 +31,7 @@ public class ReviewService {
     }
 
     public List<Review> findAllReviews(LocalDate date, String store, Integer rating) {
-        return reviewRepositoryImpl.findReviewsWithFilters(date, store, rating);
+        return reviewRepository.findReviewsWithFilters(date, store, rating);
     }
 
     public Map<String, Map<String, Double>> averageMonthlyRatings() {
